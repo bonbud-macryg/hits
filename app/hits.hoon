@@ -1,5 +1,6 @@
-/+  gossip, default-agent
-/$  grab-hit  %noun  %hit
+/+  gossip, default-agent, schooner, server, etch
+/$  grab-hit  %noun  %hits-hit
+/*  ui  %html  /app/hits-ui/html
 ::
 |%
 +$  src  ship
@@ -8,7 +9,8 @@
 +$  hit  [=src =time =app installed=?]
 ::
 +$  state-0
-  $:  scores=(map app @ud)
+  $:  %0
+      scores=(map app @ud)
       local=(set [=ship =desk])
   ==
 +$  card  $+(card card:agent:gall)
@@ -32,6 +34,9 @@
   ^-  (quip card _this)
   :_  this
   :~  [%pass /timers %arvo %b %wait now.bowl]
+      :*  %pass  /eyre/connect  %arvo  %e
+          %connect  `/apps/hits  %hits
+      ==
   ==
 ::
 ++  on-save
@@ -65,22 +70,57 @@
   ::    [%1 new]
   ::  --
 ::
-++  on-poke  on-poke:def
-::  ++  on-poke
-::    |=  [=mark =vase]
-::    ^-  (quip card _this)
-::    ::  :-  ~  this
-::    ?+  mark  (on-poke:def mark vase)
-::      %handle-http-request
-::        ?>  =(src our):bowl
-::        `this
-::        ::
-::    ==  ::  end of mark branches
+++  on-poke
+  |=  [=mark =vase]
+  ^-  (quip card _this)
+  |^
+  ?>  =(src our):bowl
+  ?+    mark  (on-poke:def mark vase)
+      %handle-http-request
+    =^  cards  state
+      (handle-http !<([@ta =inbound-request:eyre] vase))
+    [cards this]
+  ==
+  ::
+  ++  handle-http
+    |=  [eyre-id=@ta =inbound-request:eyre]
+    =/  ,request-line:server
+      (parse-request-line:server url.request.inbound-request)
+    =+  send=(cury response:schooner eyre-id)
+    ?.  authenticated.inbound-request
+      :_  state
+      (send [302 ~ [%login-redirect './apps/hits']])
+    ?+    method.request.inbound-request
+        :_  state
+        (send [405 ~ [%stock ~]])
+      ::
+        %'GET'
+      ?+    site
+          :_  state
+          (send [404 ~ [%plain "404 - Not Found"]])
+        ::
+            [%apps %hits ~]
+          :_  state
+          (send [200 ~ [%html ui]])
+        ::
+          [%apps %hits %state ~]
+        :_  state
+        (send [200 ~ [%json (enjs-state scores.state)]])
+      ==
+    ==
+  ::
+  ++  enjs-state
+    |=  scores=(map app @ud)
+    ^-  json
+    (en-vase:etch !>(scores))
+  --
 ::
 ++  on-watch
   |=  =path
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
+    [%http-response *]
+      `this
     [%~.~ %gossip %source ~]
       :_  this
       %+  turn
@@ -119,8 +159,8 @@
           %=  this
             scores  (~(put by scores) [app.hit +(app-score)])
           ==
-      ==  ::  end of sign branches
-  == ::  end of wire branches
+      ==
+  ==
 ::
 ++  on-arvo
   |=  [=wire =sign-arvo]
@@ -148,7 +188,7 @@
           =/  removed  (~(dif in local) new-local)
           :_  this(local new-local)
           ::  notify via gossip about stuff we've (un)installed recently
-          :-  [%pass /timers %arvo %b %wait (add now.bowl ~m5)]
+          :-  [%pass /timers %arvo %b %wait (add now.bowl ~s10)]
           %+  weld
             ::  apps we've added
             %+  turn

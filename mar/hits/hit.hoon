@@ -1,4 +1,4 @@
-|_  hit=[[@ *] (cask *)]
+|_  hit=[ship @da dock ?]
 ++  grad  %noun
 ++  grow
   |%
@@ -6,6 +6,6 @@
   --
 ++  grab
   |%
-  ++  noun  ,[[@ *] (cask *)]
+  ++  noun  ,[ship @da dock ?]
   --
 --

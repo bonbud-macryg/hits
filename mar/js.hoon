@@ -8,13 +8,10 @@
 ++  grow
   |%
   ++  mime  [/application/javascript (as-octs:mimes:html (@t mud))]
-  ++  hymn                                          ::  convert to %hymn
-    |^  html
-    ++  script  ;script
-                    ;-  (trip (@t mud))
-                ==
-    ++  html    ;html:(head:"{script}" body)
-    --
+  ++  elem  ;script
+              ;-  (trip (@t mud))
+            ==
+  ++  hymn  ;html:(head:"+{elem}" body)
   --
 ++  grab
   |%                                                    ::  convert from
