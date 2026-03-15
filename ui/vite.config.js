@@ -9,6 +9,10 @@ export default ({ mode }) => {
   console.log(SHIP_URL);
 
   return defineConfig({
-    plugins: [urbitPlugin({ base: 'hits', target: SHIP_URL, secure: false }), reactRefresh()]
+    plugins: [urbitPlugin({ base: 'hits', target: SHIP_URL, secure: false }), reactRefresh()],
+    build: {
+      outDir: '../desk/web',
+      emptyOutDir: true,
+    },
   });
 };
